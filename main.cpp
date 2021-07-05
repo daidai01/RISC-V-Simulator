@@ -1,5 +1,5 @@
 #include <iostream>
-#include "simulator.hpp"
+#include "five_stage_pipeline_simulator.hpp"
 #include "memory.hpp"
 
 memoryManager mManager;
