@@ -85,7 +85,6 @@ public:
             if (!busy[1] && IF_ID.cmd != 0x0FF00513) IF();
             if (IF_ID.cmd == 0x0FF00513 && busy[1] && !busy[2] && !busy[3] && !busy[4]) break;
         }
-
 #ifdef BHT
         cout << "Correct predictions: " << pd_right << endl;
         cout << "Total predictions: " << pd_tot << endl;
