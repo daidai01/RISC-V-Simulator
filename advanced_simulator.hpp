@@ -128,7 +128,7 @@ public:
                 ID_EX.imm |= inst & (bi[12] - bi[20]);
                 ID_EX.imm |= ((inst >> 20) & pow[1]) << 11u;
                 ID_EX.imm |= (inst & (bi[21] - bi[31])) >> 20u;
-                pc = ID_EX.pc + ID_EX.imm;//todo
+                pc = ID_EX.pc + ID_EX.imm;
                 break;
             case 0x67:ID_EX.cmdType = JALR;
                 ID_EX.rd = (inst >> 7) & pow[5];
@@ -136,7 +136,7 @@ public:
                 ID_EX.rs1 = (inst >> 15) & pow[5];
                 ID_EX.imm = ((inst >> 31) & pow[1]) == 1 ? bi[11] : 0;
                 ID_EX.imm |= (inst >> 20) & pow[11];
-                pc = (reg[ID_EX.rs1] + ID_EX.imm) & ~1;//todo
+                pc = (reg[ID_EX.rs1] + ID_EX.imm) & ~1;
                 break;
             case 0x63:ID_EX.func3 = (inst >> 12) & pow[3];
                 ID_EX.rs1 = (inst >> 15) & pow[5];
@@ -159,7 +159,6 @@ public:
                         break;
                     case 7:ID_EX.cmdType = BGEU;
                 }
-                //todo
                 if (((pd_table[ID_EX.pc & pow[7]] & 2) >> 1) == 1) pc = ID_EX.pc + ID_EX.imm;
                 break;
             case 0x3:ID_EX.rd = (inst >> 7) & pow[5];
@@ -271,10 +270,8 @@ public:
             case AUIPC:EX_MEM.vd = EX_MEM.pc + EX_MEM.imm;
                 break;
             case JAL:EX_MEM.vd = EX_MEM.pc + 4;
-//                pc = EX_MEM.pc + EX_MEM.imm;
                 break;
             case JALR:EX_MEM.vd = EX_MEM.pc + 4;
-//                pc = (reg[EX_MEM.rs1] + EX_MEM.imm) & ~1;
                 break;
             case BEQ:typeB = true;
                 if (EX_MEM.vs1 == EX_MEM.vs2) jump = true;
