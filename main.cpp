@@ -1,5 +1,6 @@
 #include <iostream>
 #include "advanced_simulator.hpp"
+//#include "simulator.hpp"
 #include "memory.hpp"
 
 memoryManager mManager;
@@ -7,11 +8,15 @@ Simulator simulator;
 
 int main()
 {
-//    freopen("../sample/sample.data", "r", stdin);
-//    freopen("../testcases/tak.data", "r", stdin);
+//    freopen("../testcases/bulgarian.data", "r", stdin);
+//    freopen("my_reg", "w", stdout);
+//    freopen("pipeline", "w", stdout);
     mManager.init();
     std::cout << simulator.run() << std::endl;
-//    simulator.printReg();
+
+#ifdef print
+    simulator.printReg();
+#endif
     return 0;
 }
 
