@@ -1,15 +1,16 @@
-#ifndef RISCV_FIVE_STAGE_PIPELINE_SIMULATOR_HPP
-#define RISCV_FIVE_STAGE_PIPELINE_SIMULATOR_HPP
+#ifndef RISCV_ADVANCED_SIMULATOR_HPP
+#define RISCV_ADVANCED_SIMULATOR_HPP
 
 #include <cstring>
 #include <iostream>
 #include "memory.hpp"
+#include <iomanip>
 
 using namespace std;
 
 //#define Debug
 //#define print
-//#define BHT
+#define BHT
 
 extern memoryManager mManager;
 
@@ -23,11 +24,10 @@ enum commandType
 class Simulator
 {
 private:
-    int pc;
+    int pc = 0;
     unsigned reg[32];
 
-    //pipeline register
-    struct instruction
+    struct instruction //pipeline register
     {
         int pc = 0;
         commandType cmdType;
@@ -39,24 +39,23 @@ private:
         int imm = 0;
         int shamt = 0;
     } IF_ID, ID_EX, EX_MEM, MEM_WB;
-    bool busy[5];
+    bool busy[5]; //IF ID EX MEM WB
 
-    //forwarding
-    int MEM_WB_rd;
-    unsigned MEM_WB_vd;
+    //forwarding(data hazards)
+    int MEM_WB_rd = 0;
+    unsigned MEM_WB_vd = 0;
 
     //prediction
-    int pd_table[4096];
-    int pd_right;
-    int pd_tot;
+    int pd_table[128];
+    int pd_right = 0;
+    int pd_tot = 0;
 
-    unsigned pow[32];
-    unsigned bi[32];
+    unsigned pow[32]; //0...01...1
+    unsigned bi[32]; //1...10...0
 
 public:
     Simulator()
     {
-        pc = MEM_WB_rd = MEM_WB_vd = pd_right = pd_tot = 0;
         memset(reg, 0, sizeof(reg));
         memset(pd_table, 0, sizeof(pd_table));
         memset(busy, 0, sizeof(busy));
@@ -89,8 +88,8 @@ public:
         cout << "Correct predictions: " << pd_right << endl;
         cout << "Total predictions: " << pd_tot << endl;
         cout << "Accuracy of prediction: ";
-        if (pd_tot == 0) cout << "100.0000%" << endl;
-        else cout << (double) pd_right / pd_tot * 100 << "%" << endl;
+        if (pd_tot == 0) cout << "-" << endl;
+        else cout << fixed << setprecision(2) << (double) pd_right / pd_tot * 100 << "%" << endl;
 #endif
         return reg[10] & pow[8];
     }
@@ -159,7 +158,8 @@ public:
                         break;
                     case 7:ID_EX.cmdType = BGEU;
                 }
-                if (((pd_table[ID_EX.pc & pow[7]] & 2) >> 1) == 1) pc = ID_EX.pc + ID_EX.imm;
+                //todo
+                if (((pd_table[(ID_EX.pc >> 2u) & 31u] & 2) >> 1) == 1) pc = ID_EX.pc + ID_EX.imm;
                 break;
             case 0x3:ID_EX.rd = (inst >> 7) & pow[5];
                 ID_EX.func3 = (inst >> 12) & pow[3];
@@ -245,7 +245,7 @@ public:
                 }
         }
 
-        //bubble
+        //bubble(control hazards)
         if (busy[3] && EX_MEM.rd && (EX_MEM.rd == ID_EX.rs1 || EX_MEM.rd == ID_EX.rs2)) return;
 
         //forwarding
@@ -343,24 +343,25 @@ public:
         if (typeB)
         {
             pd_tot++;
+            int idx = (EX_MEM.pc >> 2) & 31u;
             if (jump)
             {
-                if (((pd_table[EX_MEM.pc & pow[7]] & 2) >> 1) == 1) pd_right++;
+                if (((pd_table[idx] & 2) >> 1) == 1) pd_right++;
                 else
                 {
                     pc = EX_MEM.pc + EX_MEM.imm;
                     busy[1] = false;
                 }
-                pd_table[EX_MEM.pc & pow[8]] = std::min(pd_table[EX_MEM.pc & pow[8]] + 1, 3);
+                pd_table[idx] = std::min(pd_table[idx] + 1, 3);
             } else
             {
-                if (((pd_table[EX_MEM.pc & pow[7]] & 2) >> 1) == 0) pd_right++;
+                if (((pd_table[idx] & 2) >> 1) == 0) pd_right++;
                 else
                 {
                     pc = EX_MEM.pc + 4;
                     busy[1] = false;
                 }
-                pd_table[EX_MEM.pc & pow[8]] = std::max(pd_table[EX_MEM.pc & pow[8]] - 1, 0);
+                pd_table[idx] = std::max(pd_table[idx] - 1, 0);
             }
         }
         busy[2] = false;
@@ -439,4 +440,4 @@ public:
     }
 };
 
-#endif //RISCV_FIVE_STAGE_PIPELINE_SIMULATOR_HPP
+#endif //RISCV_ADVANCED_SIMULATOR_HPP
