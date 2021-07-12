@@ -1,3 +1,4 @@
+
 #ifndef RISCV_SIMULATOR_HPP
 #define RISCV_SIMULATOR_HPP
 
@@ -6,6 +7,8 @@
 #include "memory.hpp"
 
 using namespace std;
+
+#define print
 
 extern memoryManager mManager;
 
@@ -67,15 +70,20 @@ public:
             EX();
             MEM();
             WB();
+#ifdef print
+            printInst(wb);
+            printReg();
+#endif
         }
         return reg[10] & pow[8];
     }
 
     void IF()
     {
+        id = instruction();
         id.cmd = mManager.load(pc, 4);
         id.pc = pc;
-//        cout << pc << endl;
+//        cout << std::hex << pc << endl;
         pc += 4;
     }
 
@@ -343,8 +351,19 @@ public:
     {
         cout << "--------printReg" << endl;
         for (int i = 0; i < 32; ++i)
-            cout << i << " " << reg[i] << endl;
+            cout << std::dec << i << " " << reg[i] << endl;
         cout << "----------------" << endl;
+    }
+
+    void printInst(instruction &i)
+    {
+        cout << "--------printInst" << endl;
+        cout << "pc: " << i.pc << endl;
+        cout << "cmdType: " << i.cmdType << endl;
+        cout << "imm: " << i.imm << " " << "shamt: " << i.shamt << endl;
+        cout << "rs1: " << i.rs1 << " " << "vs1: " << reg[i.rs1] << endl;
+        cout << "rs2: " << i.rs2 << " " << "vs2: " << reg[i.rs2] << endl;
+        cout << "rd: " << i.rd << " " << "vd: " << i.vd << endl;
     }
 };
 
